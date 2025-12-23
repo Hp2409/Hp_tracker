@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HP Tracker - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6LeowzMsAAAAAOJIebEUc4s1JuAagFNf-y5h5MIt"></script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🎓 HP Tracker</h1>
+
+    <!-- Authentication Card ONLY - NO EXAMS HERE -->
+    <div class="card" id="authCard">
+      <h2 id="authTitle">Welcome Back</h2>
+
+      <div id="successMessage" class="success-message hidden">
+        <span style="font-size: 1.2em;">✓</span>
+        <span id="successText"></span>
+      </div>
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="input-group">
+          <label>Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📧</span>
+            <input id="loginEmail" type="email" placeholder="Enter your email" autocomplete="email">
+          </div>
+          <div id="loginEmailError" class="error-message hidden"></div>
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password">
+            <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+              <span class="eye-icon">👁️</span>
+            </button>
+          </div>
+          <div id="loginPasswordError" class="error-message hidden"></div>
+        </div>
+
+        <div class="link-text" style="text-align: right; margin-top: -10px; margin-bottom: 15px;">
+          <a id="forgotPasswordLink" style="font-size: 0.85em;">Forgot Password?</a>
+        </div>
+
+        <button type="button" id="loginBtn">Sign In</button>
+
+        <div class="link-text">
+          New to HP Tracker? <a id="switchToSignupLink">Create an account</a>
+        </div>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signupForm" class="hidden">
+        <div class="input-group">
+          <label>Full Name</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input id="signupName" type="text" placeholder="Enter your full name" autocomplete="name">
+          </div>
+          <div id="signupNameError" class="error-message hidden"></div>
+        </div>
+
+        <div class="input-group">
+          <label>Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📧</span>
+            <input id="signupEmail" type="email" placeholder="Enter your email" autocomplete="email">
+          </div>
+          <div id="signupEmailError" class="error-message hidden"></div>
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input id="signupPassword" type="password" placeholder="Create a strong password" autocomplete="new-password">
+            <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+              <span class="eye-icon">👁️</span>
+            </button>
+          </div>
+          
+          <div class="password-requirements">
+            <h4>Password must contain:</h4>
+            <div class="requirement" id="req-length">
+              <span class="requirement-icon">○</span>
+              <span>At least 8 characters</span>
+            </div>
+            <div class="requirement" id="req-uppercase">
+              <span class="requirement-icon">○</span>
+              <span>One uppercase letter (A-Z)</span>
+            </div>
+            <div class="requirement" id="req-lowercase">
+              <span class="requirement-icon">○</span>
+              <span>One lowercase letter (a-z)</span>
+            </div>
+            <div class="requirement" id="req-number">
+              <span class="requirement-icon">○</span>
+              <span>One number (0-9)</span>
+            </div>
+            <div class="requirement" id="req-special">
+              <span class="requirement-icon">○</span>
+              <span>One special character (!@#$%^&*)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Confirm Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔒</span>
+            <input id="signupConfirmPassword" type="password" placeholder="Re-enter your password" autocomplete="new-password">
+            <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+              <span class="eye-icon">👁️</span>
+            </button>
+          </div>
+          <div id="signupConfirmError" class="error-message hidden"></div>
+        </div>
+
+        <button type="button" id="signupBtn">Create Account</button>
+
+        <div class="link-text">
+          Already have an account? <a id="switchToLoginLink">Sign in</a>
+        </div>
+      </div>
+
+      <!-- Forgot Password Form -->
+      <div id="forgotPasswordForm" class="hidden">
+        <p style="color: #666; margin-bottom: 20px; text-align: center;">
+          Enter your email address and we'll send you a link to reset your password.
+        </p>
+
+        <div class="input-group">
+          <label>Email Address</label>
+          <div class="input-wrapper">
+            <span class="input-icon">📧</span>
+            <input id="resetEmail" type="email" placeholder="Enter your email" autocomplete="email">
+          </div>
+          <div id="resetEmailError" class="error-message hidden"></div>
+        </div>
+
+        <button type="button" id="resetBtn">Send Reset Link</button>
+
+        <div class="link-text">
+          Remember your password? <a id="backToLoginLink">Sign in</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTICE: NO EXAM TABLE HERE - IT'S ON dashboard.html -->
+  </div>
+
+  <!-- Version Badge -->
+  <div class="version-badge" id="versionBadge">v2.1.0</div>
+
+  <!-- reCAPTCHA Badge Notice -->
+  <div style="position: fixed; bottom: 10px; left: 10px; font-size: 10px; color: rgba(255,255,255,0.7); backdrop-filter: blur(5px); padding: 5px 10px; border-radius: 5px;">
+    🔒 Protected by reCAPTCHA
+  </div>
+
+  <!-- Scripts - NO exams.js here! -->
+  <script src="auth.js"></script>
+  <script src="sw-register.js"></script>
+</body>
+</html>

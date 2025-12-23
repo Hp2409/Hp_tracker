@@ -1,0 +1,193 @@
+// HP Tracker Service Worker
+// INCREMENT THIS VERSION ON EVERY DEPLOY!
+const CACHE_VERSION = 'v1.1.0';
+const CACHE_NAME = `hp-tracker-${CACHE_VERSION}`;
+
+// Files to cache for offline support
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json'
+];
+
+// Install - cache static assets
+self.addEventListener('install', (event) => {
+  console.log(`[HP Tracker SW] Installing ${CACHE_VERSION}`);
+  
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[HP Tracker SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => {
+        console.log('[HP Tracker SW] Install complete, skipping waiting');
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('[HP Tracker SW] Install failed:', error);
+      })
+  );
+});
+
+// Activate - clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log(`[HP Tracker SW] Activating ${CACHE_VERSION}`);
+  
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => {
+            // Delete only old hp-tracker caches, keep others
+            if (cacheName.startsWith('hp-tracker-') && cacheName !== CACHE_NAME) {
+              console.log('[HP Tracker SW] Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      })
+      .then(() => {
+        console.log('[HP Tracker SW] Taking control of all pages');
+        return self.clients.claim();
+      })
+  );
+});
+
+// Fetch - smart caching strategy
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Strategy 1: HTML pages - ALWAYS fetch from network
+  // This fixes your lag issue - always get fresh HTML
+  if (request.mode === 'navigate' || 
+      request.destination === 'document' ||
+      request.url.endsWith('.html')) {
+    
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          console.log('[HP Tracker SW] Fetched fresh HTML from network');
+          // Cache the fresh HTML for offline use
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+          return response;
+        })
+        .catch((error) => {
+          console.log('[HP Tracker SW] Network failed, trying cache');
+          // If network fails, try cache (offline mode)
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Strategy 2: API calls - NEVER cache
+  // Your backend data should always be fresh
+  if (url.hostname.includes('onrender.com') || 
+      url.hostname.includes('firebase') ||
+      url.pathname.includes('/api/') ||
+      url.pathname.includes('engineering-exams')) {
+    
+    event.respondWith(
+      fetch(request)
+        .catch((error) => {
+          console.log('[HP Tracker SW] API call failed:', error);
+          // Return error response for failed API calls
+          return new Response(
+            JSON.stringify({ error: 'Network unavailable', exams: [] }),
+            { 
+              status: 503,
+              headers: { 'Content-Type': 'application/json' }
+            }
+          );
+        })
+    );
+    return;
+  }
+
+  // Strategy 3: Firebase scripts - Network first
+  if (url.hostname.includes('gstatic.com') || 
+      url.hostname.includes('googleapis.com')) {
+    
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          // Cache Firebase scripts for offline
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cached version
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Strategy 4: Everything else - Cache first for speed
+  event.respondWith(
+    caches.match(request)
+      .then((cachedResponse) => {
+        if (cachedResponse) {
+          console.log('[HP Tracker SW] Serving from cache:', request.url);
+          
+          // Return cached version immediately
+          // But also fetch fresh version in background
+          fetch(request)
+            .then((response) => {
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(request, response);
+              });
+            })
+            .catch(() => {}); // Ignore background fetch errors
+          
+          return cachedResponse;
+        }
+
+        // Not in cache, fetch from network
+        return fetch(request)
+          .then((response) => {
+            // Cache for future use
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseClone);
+            });
+            return response;
+          });
+      })
+  );
+});
+
+// Handle messages from the app
+self.addEventListener('message', (event) => {
+  console.log('[HP Tracker SW] Message received:', event.data);
+  
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('[HP Tracker SW] Skipping waiting phase');
+    self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    console.log('[HP Tracker SW] Clearing all caches');
+    event.waitUntil(
+      caches.keys().then((keys) => 
+        Promise.all(keys.map((key) => caches.delete(key)))
+      )
+    );
+  }
+  
+  if (event.data && event.data.type === 'GET_VERSION') {
+    console.log('[HP Tracker SW] Sending version:', CACHE_VERSION);
+    event.ports[0].postMessage({ version: CACHE_VERSION });
+  }
+});
+
+// Log service worker lifecycle
+console.log('[HP Tracker SW] Service Worker script loaded, version:', CACHE_VERSION);

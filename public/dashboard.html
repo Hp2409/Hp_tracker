@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HP Tracker - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase - Use ONE version only -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-container">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h1 class="app-title">HP Tracker</h1>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    <i class="fas fa-user"></i>
+                    <span id="userEmail">Loading...</span>
+                </div>
+                <button class="btn-logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Page Title -->
+        <div class="page-title-card">
+            <div class="title-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h2>Engineering Government Exams</h2>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-card">
+            <div class="filter-content">
+                <i class="fas fa-filter"></i>
+                <label for="branchFilter">Filter by Branch:</label>
+                <select id="branchFilter" class="filter-select">
+                    <option value="all">All Branches</option>
+                    <option value="civil">Civil Engineering</option>
+                    <option value="mechanical">Mechanical Engineering</option>
+                    <option value="electrical">Electrical Engineering</option>
+                    <option value="cse">Computer Science Engineering</option>
+                    <option value="ece">Electronics & Communication</option>
+                    <option value="eee">Electrical & Electronics</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Statistics Dashboard -->
+        <div class="stats-container">
+            <div class="stat-card stat-total">
+                <div class="stat-content">
+                    <div class="stat-text">
+                        <p class="stat-label">Total Exams</p>
+                        <p class="stat-value" id="totalExams">0</p>
+                    </div>
+                    <i class="fas fa-book-open stat-icon"></i>
+                </div>
+            </div>
+            <div class="stat-card stat-applied">
+                <div class="stat-content">
+                    <div class="stat-text">
+                        <p class="stat-label">Applied</p>
+                        <p class="stat-value" id="appliedCount">0</p>
+                    </div>
+                    <i class="fas fa-check-circle stat-icon"></i>
+                </div>
+            </div>
+            <div class="stat-card stat-not-applied">
+                <div class="stat-content">
+                    <div class="stat-text">
+                        <p class="stat-label">Not Applied</p>
+                        <p class="stat-value" id="notAppliedCount">0</p>
+                    </div>
+                    <i class="fas fa-times-circle stat-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Exams Table -->
+        <div class="table-card">
+            <div class="table-container">
+                <table class="exams-table">
+                    <thead>
+                        <tr>
+                            <th>Exam Name</th>
+                            <th>Organization</th>
+                            <th>Eligible Branches</th>
+                            <th>Application Date</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="examsTableBody">
+                        <!-- Table rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Notes Modal -->
+    <div id="notesModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Add Notes</h3>
+            <textarea id="notesTextarea" placeholder="Add your notes here..." rows="6"></textarea>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="closeModalBtn">Cancel</button>
+                <button class="btn-save" id="saveNotesBtn">Save Notes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="dashboard.js"></script>
+</body>
+</html>

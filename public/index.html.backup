@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>HP Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="manifest" href="manifest.json">
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5em;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .card {
+      background: #ffffff;
+      color: #333;
+      border-radius: 16px;
+      padding: 30px;
+      margin: 20px auto;
+      max-width: 500px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: fadeIn 0.6s ease;
+    }
+
+    .card.wide {
+      max-width: 900px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #667eea;
+      font-size: 1.8em;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #555;
+      font-size: 0.9em;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 12px;
+      color: #667eea;
+      pointer-events: none;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 12px 12px 40px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    input.error {
+      border-color: #e53e3e;
+      background: #fff5f5;
+    }
+
+    input.success {
+      border-color: #38a169;
+      background: #f0fff4;
+    }
+
+    .error-message {
+      color: #e53e3e;
+      font-size: 0.85em;
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      cursor: pointer;
+      color: #667eea;
+      background: none;
+      border: none;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+    }
+
+    .password-requirements {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      font-size: 0.85em;
+    }
+
+    .password-requirements h4 {
+      margin-bottom: 10px;
+      color: #555;
+      font-size: 0.95em;
+    }
+
+    .requirement {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      color: #666;
+      transition: all 0.3s ease;
+    }
+
+    .requirement.met {
+      color: #38a169;
+    }
+
+    .requirement.unmet {
+      color: #e53e3e;
+    }
+
+    .requirement-icon {
+      font-size: 1.1em;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    button.loading {
+      position: relative;
+      color: transparent;
+    }
+
+    button.loading::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      top: 50%;
+      left: 50%;
+      margin-left: -10px;
+      margin-top: -10px;
+      border: 3px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spinner 0.6s linear infinite;
+    }
+
+    @keyframes spinner {
+      to { transform: rotate(360deg); }
+    }
+
+    .link-text {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .link-text a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .link-text a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .success-message {
+      background: #f0fff4;
+      border: 2px solid #38a169;
+      color: #22543d;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideDown 0.4s ease;
+    }
+
+    select {
+      padding: 10px;
+      margin: 10px 5px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1em;
+      background: #f8f9fa;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: left;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      font-size: 0.85em;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .not-applied {
+      color: #e53e3e;
+      font-weight: 600;
+    }
+
+    .applied {
+      color: #38a169;
+      font-weight: 600;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .update-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 15px;
+      text-align: center;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      animation: slideDown 0.4s ease-out;
+    }
+
+    .update-banner button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      width: auto;
+    }
+
+    .update-banner .update-btn {
+      background: white;
+      color: #667eea;
+    }
+
+    .update-banner .update-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .update-banner .later-btn {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+    }
+
+    .update-banner .later-btn:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .version-badge {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-family: monospace;
+      backdrop-filter: blur(10px);
+    }
+
+    .user-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9em;
+      margin-bottom: 15px;
+    }
+
+    .logout-btn {
+      background: rgba(255,255,255,0.2);
+      padding: 6px 15px;
+      border-radius: 15px;
+      font-size: 0.85em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: auto;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.8em;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      h2 {
+        font-size: 1.4em;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎓 HP Tracker</h1>
+
+  <!-- Authentication Card -->
+  <div class="card" id="authCard">
+    <h2 id="authTitle">Welcome Back</h2>
+
+    <div id="successMessage" class="success-message hidden">
+      <span style="font-size: 1.2em;">✓</span>
+      <span id="successText"></span>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm">
+      <div class="input-group">
+        <label>Email Address</label>
+        <div class="input-wrapper">
+          <span class="input-icon">📧</span>
+          <input id="loginEmail" type="email" placeholder="Enter your email" autocomplete="email">
+        </div>
+        <div id="loginEmailError" class="error-message hidden"></div>
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input id="loginPassword" type="password" placeholder="Enter your password" autocomplete="current-password">
+          <button class="password-toggle" onclick="togglePassword('loginPassword', this)">
+            <span class="eye-icon">👁️</span>
+          </button>
+        </div>
+        <div id="loginPasswordError" class="error-message hidden"></div>
+      </div>
+
+      <button id="loginBtn" onclick="handleLogin()">Sign In</button>
+
+      <div class="link-text">
+        New to HP Tracker? <a onclick="switchToSignup()">Create an account</a>
+      </div>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signupForm" class="hidden">
+      <div class="input-group">
+        <label>Full Name</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input id="signupName" type="text" placeholder="Enter your full name" autocomplete="name">
+        </div>
+        <div id="signupNameError" class="error-message hidden"></div>
+      </div>
+
+      <div class="input-group">
+        <label>Email Address</label>
+        <div class="input-wrapper">
+          <span class="input-icon">📧</span>
+          <input id="signupEmail" type="email" placeholder="Enter your email" autocomplete="email">
+        </div>
+        <div id="signupEmailError" class="error-message hidden"></div>
+      </div>
+
+      <div class="input-group">
+        <label>Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input id="signupPassword" type="password" placeholder="Create a strong password" autocomplete="new-password">
+          <button class="password-toggle" onclick="togglePassword('signupPassword', this)">
+            <span class="eye-icon">👁️</span>
+          </button>
+        </div>
+        
+        <div class="password-requirements">
+          <h4>Password must contain:</h4>
+          <div class="requirement" id="req-length">
+            <span class="requirement-icon">○</span>
+            <span>At least 8 characters</span>
+          </div>
+          <div class="requirement" id="req-uppercase">
+            <span class="requirement-icon">○</span>
+            <span>One uppercase letter (A-Z)</span>
+          </div>
+          <div class="requirement" id="req-lowercase">
+            <span class="requirement-icon">○</span>
+            <span>One lowercase letter (a-z)</span>
+          </div>
+          <div class="requirement" id="req-number">
+            <span class="requirement-icon">○</span>
+            <span>One number (0-9)</span>
+          </div>
+          <div class="requirement" id="req-special">
+            <span class="requirement-icon">○</span>
+            <span>One special character (!@#$%^&*)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Confirm Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input id="signupConfirmPassword" type="password" placeholder="Re-enter your password" autocomplete="new-password">
+          <button class="password-toggle" onclick="togglePassword('signupConfirmPassword', this)">
+            <span class="eye-icon">👁️</span>
+          </button>
+        </div>
+        <div id="signupConfirmError" class="error-message hidden"></div>
+      </div>
+
+      <button id="signupBtn" onclick="handleSignup()">Create Account</button>
+
+      <div class="link-text">
+        Already have an account? <a onclick="switchToLogin()">Sign in</a>
+      </div>
+    </div>
+
+    <!-- Logged In State -->
+    <div id="loggedInState" class="hidden">
+      <div style="text-align: center;">
+        <div class="user-badge">
+          <span>👤</span>
+          <span id="userEmail"></span>
+          <button class="logout-btn" onclick="handleLogout()">Logout</button>
+        </div>
+        <p style="color: #666; margin-top: 10px;">You are successfully logged in!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exams Card -->
+  <div class="card wide" id="examsCard">
+    <h2>📚 Engineering Government Exams</h2>
+
+    <div style="margin-bottom: 20px;">
+      <label style="font-weight: 600; color: #555; margin-right: 10px;">Filter by Branch:</label>
+      <select id="branchFilter">
+        <option value="All">All Branches</option>
+        <option value="CSE">Computer Science (CSE)</option>
+        <option value="ECE">Electronics & Communication (ECE)</option>
+        <option value="EEE">Electrical & Electronics (EEE)</option>
+        <option value="ME">Mechanical Engineering (ME)</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Exam Name</th>
+          <th>Organization</th>
+          <th>Eligible Branches</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="examTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Version Badge -->
+<div class="version-badge" id="versionBadge">Loading...</div>
+
+<!-- FIREBASE AUTH SCRIPT -->
+<script>
+  console.log('[HP Tracker] Initializing Firebase Auth');
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnczxKTkqqHP3gpwFEAM6zEwXBKsN2q-E",
+    authDomain: "hp-tracker-c9d56.firebaseapp.com",
+    databaseURL: "https://hp-tracker-c9d56-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "hp-tracker-c9d56",
+    storageBucket: "hp-tracker-c9d56.firebasestorage.app",
+    messagingSenderId: "791153884054",
+    appId: "1:791153884054:web:8eebcba830cab91d767bb7",
+    measurementId: "G-N9H7DLEBPY"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // Toggle password visibility
+  function togglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
+    const eyeIcon = button.querySelector('.eye-icon');
+    
+    if (input.type === 'password') {
+      input.type = 'text';
+      eyeIcon.textContent = '👁️‍🗨️';
+    } else {
+      input.type = 'password';
+      eyeIcon.textContent = '👁️';
+    }
+  }
+
+  // Switch between login and signup
+  function switchToSignup() {
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('signupForm').classList.remove('hidden');
+    document.getElementById('authTitle').textContent = 'Create Account';
+    clearErrors();
+  }
+
+  function switchToLogin() {
+    document.getElementById('signupForm').classList.add('hidden');
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('authTitle').textContent = 'Welcome Back';
+    clearErrors();
+  }
+
+  // Clear all error messages
+  function clearErrors() {
+    document.querySelectorAll('.error-message').forEach(el => {
+      el.classList.add('hidden');
+      el.textContent = '';
+    });
+    document.querySelectorAll('input').forEach(input => {
+      input.classList.remove('error', 'success');
+    });
+    document.getElementById('successMessage').classList.add('hidden');
+  }
+
+  // Show error message
+  function showError(elementId, message) {
+    const errorEl = document.getElementById(elementId);
+    errorEl.textContent = '⚠️ ' + message;
+    errorEl.classList.remove('hidden');
+    
+    const inputId = elementId.replace('Error', '');
+    const input = document.getElementById(inputId);
+    if (input) {
+      input.classList.add('error');
+      input.classList.remove('success');
+    }
+  }
+
+  // Show success message
+  function showSuccess(message) {
+    const successEl = document.getElementById('successMessage');
+    document.getElementById('successText').textContent = message;
+    successEl.classList.remove('hidden');
+    setTimeout(() => successEl.classList.add('hidden'), 5000);
+  }
+
+  // Email validation
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  // Password validation
+  const passwordRules = {
+    length: (p) => p.length >= 8,
+    uppercase: (p) => /[A-Z]/.test(p),
+    lowercase: (p) => /[a-z]/.test(p),
+    number: (p) => /[0-9]/.test(p),
+    special: (p) => /[!@#$%^&*]/.test(p)
+  };
+
+  // Real-time password validation
+  document.getElementById('signupPassword')?.addEventListener('input', (e) => {
+    const password = e.target.value;
+    
+    Object.keys(passwordRules).forEach(rule => {
+      const reqEl = document.getElementById(`req-${rule}`);
+      const icon = reqEl.querySelector('.requirement-icon');
+      
+      if (passwordRules[rule](password)) {
+        reqEl.classList.add('met');
+        reqEl.classList.remove('unmet');
+        icon.textContent = '✓';
+      } else {
+        reqEl.classList.add('unmet');
+        reqEl.classList.remove('met');
+        icon.textContent = '○';
+      }
+    });
+  });
+
+  // Handle Login
+  async function handleLogin() {
+    clearErrors();
+    
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+    const loginBtn = document.getElementById('loginBtn');
+
+    // Validation
+    let hasError = false;
+    
+    if (!email) {
+      showError('loginEmailError', 'Email is required');
+      hasError = true;
+    } else if (!isValidEmail(email)) {
+      showError('loginEmailError', 'Please enter a valid email address');
+      hasError = true;
+    }
+
+    if (!password) {
+      showError('loginPasswordError', 'Password is required');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Show loading state
+    loginBtn.disabled = true;
+    loginBtn.classList.add('loading');
+
+    try {
+      await auth.signInWithEmailAndPassword(email, password);
+      showSuccess('Login successful! Welcome back.');
+      console.log('[HP Tracker] Login successful');
+    } catch (err) {
+      console.error('[HP Tracker] Login error:', err);
+      
+      let errorMessage = 'Login failed. Please try again.';
+      if (err.code === 'auth/user-not-found') {
+        errorMessage = 'No account found with this email';
+      } else if (err.code === 'auth/wrong-password') {
+        errorMessage = 'Incorrect password';
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+      } else if (err.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many failed attempts. Please try again later.';
+      }
+      
+      showError('loginPasswordError', errorMessage);
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.classList.remove('loading');
+    }
+  }
+
+  // Handle Signup
+  async function handleSignup() {
+    clearErrors();
+    
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value.trim();
+    const confirmPassword = document.getElementById('signupConfirmPassword').value.trim();
+    const signupBtn = document.getElementById('signupBtn');
+
+    // Validation
+    let hasError = false;
+    
+    if (!name) {
+      showError('signupNameError', 'Name is required');
+      hasError = true;
+    } else if (name.length < 2) {
+      showError('signupNameError', 'Name must be at least 2 characters');
+      hasError = true;
+    }
+
+    if (!email) {
+      showError('signupEmailError', 'Email is required');
+      hasError = true;
+    } else if (!isValidEmail(email)) {
+      showError('signupEmailError', 'Please enter a valid email address (e.g., user@example.com)');
+      hasError = true;
+    }
+
+    if (!password) {
+      showError('signupPasswordError', 'Password is required');
+      hasError = true;
+    } else {
+      // Check all password requirements
+      const failedRules = Object.keys(passwordRules).filter(rule => !passwordRules[rule](password));
+      if (failedRules.length > 0) {
+        const input = document.getElementById('signupPassword');
+        input.classList.add('error');
+        // Scroll to password requirements
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        hasError = true;
+      }
+    }
+
+    if (!confirmPassword) {
+      showError('signupConfirmError', 'Please confirm your password');
+      hasError = true;
+    } else if (password !== confirmPassword) {
+      showError('signupConfirmError', 'Passwords do not match');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    // Show loading state
+    signupBtn.disabled = true;
+    signupBtn.classList.add('loading');
+
+    try {
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      
+      // Update user profile with name
+      await userCredential.user.updateProfile({
+        displayName: name
+      });
+      
+      showSuccess('Account created successfully! Welcome to HP Tracker.');
+      console.log('[HP Tracker] Signup successful');
+      
+      // Switch to login view after 2 seconds
+      setTimeout(() => {
+        switchToLogin();
+      }, 2000);
+      
+    } catch (err) {
+      console.error('[HP Tracker] Signup error:', err);
+      
+      let errorMessage = 'Signup failed. Please try again.';
+      if (err.code === 'auth/email-already-in-use') {
+        errorMessage = 'This email is already registered. Please login instead.';
+        showError('signupEmailError', errorMessage);
+      } else if (err.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email address';
+        showError('signupEmailError', errorMessage);
+      } else if (err.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak. Please use a stronger password.';
+        showError('signupPasswordError', errorMessage);
+      } else {
+        showError('signupConfirmError', errorMessage);
+      }
+    } finally {
+      signupBtn.disabled = false;
+      signupBtn.classList.remove('loading');
+    }
+  }
+
+  // Handle Logout
+  async function handleLogout() {
+    try {
+      await auth.signOut();
+      showSuccess('Logged out successfully');
+      console.log('[HP Tracker] Logout successful');
+    } catch (err) {
+      console.error('[HP Tracker] Logout error:', err);
+      alert('Logout failed: ' + err.message);
+    }
+  }
+
+  // Handle Enter key
+  document.getElementById('loginPassword')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  document.getElementById('signupConfirmPassword')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleSignup();
+  });
+
+  // AUTH STATE OBSERVER
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      console.log('[HP Tracker] User logged in:', user.email);
+      
+      // Hide forms, show logged in state
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('loggedInState').classList.remove('hidden');
+      document.getElementById('authTitle').textContent = 'Account';
+      document.getElementById('userEmail').textContent = user.email;
+      
+    } else {
+      console.log('[HP Tracker] User logged out');
+      
+      // Show login form
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('loggedInState').classList.add('hidden');
+      document.getElementById('authTitle').textContent = 'Welcome Back';
+    }
+  });
+</script>
+
+<!-- EXAM LOADING SCRIPT -->
+<script>
+  console.log('[HP Tracker] Page loaded');
+  
+  const API_URL = "https://hp-tracker-backend.onrender.com/engineering-exams";
+  const table = document.getElementById("examTable");
+  const filter = document.getElementById("branchFilter");
+
+  let exams = [];
+
+  // Show loading state
+  table.innerHTML = "<tr><td colspan='4' style='text-align:center; padding: 30px;'>Loading exams...</td></tr>";
+
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      console.log('[HP Tracker] Exams loaded:', data);
+      exams = data.exams || [];
+      render();
+    })
+    .catch((
