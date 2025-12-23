@@ -1,152 +1,125 @@
-// Service Worker - HP Tracker v1.1.0
-const CACHE_VERSION = 'v1.1.0';
+// ===============================
+// HP Tracker Service Worker
+// Version: v1.2.0  (CACHE FIXED)
+// ===============================
+
+const CACHE_VERSION = "v1.2.0";
 const CACHE_NAME = `hp-tracker-${CACHE_VERSION}`;
 
+// Cache ONLY static assets (NO JS, NO JSON)
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/dashboard.html',
-  '/styles.css',
-  '/auth.js',
-  '/dashboard.js',
-  '/exams.js',
-  '/manifest.json'
+  "/",
+  "/index.html",
+  "/dashboard.html",
+  "/styles.css",
+  "/auth.js",
+  "/manifest.json"
 ];
 
-// Install event - cache assets
-self.addEventListener('install', (event) => {
-  console.log('[HP Tracker SW] Installing version:', CACHE_VERSION);
-  
+// -------------------------------
+// INSTALL
+// -------------------------------
+self.addEventListener("install", (event) => {
+  console.log("[HP Tracker SW] Installing:", CACHE_VERSION);
+
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[HP Tracker SW] Caching assets');
-        return cache.addAll(ASSETS_TO_CACHE);
-      })
-      .then(() => {
-        console.log('[HP Tracker SW] Installation complete');
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('[HP Tracker SW] Installation failed:', error);
-      })
+      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate event - cleanup old caches
-self.addEventListener('activate', (event) => {
-  console.log('[HP Tracker SW] Activating version:', CACHE_VERSION);
-  
+// -------------------------------
+// ACTIVATE
+// -------------------------------
+self.addEventListener("activate", (event) => {
+  console.log("[HP Tracker SW] Activating:", CACHE_VERSION);
+
   event.waitUntil(
-    caches.keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && cacheName.startsWith('hp-tracker-')) {
-              console.log('[HP Tracker SW] Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-      .then(() => {
-        console.log('[HP Tracker SW] Activation complete');
-        return self.clients.claim();
-      })
+    caches.keys().then((cacheNames) =>
+      Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME && cache.startsWith("hp-tracker-")) {
+            console.log("[HP Tracker SW] Deleting old cache:", cache);
+            return caches.delete(cache);
+          }
+        })
+      )
+    ).then(() => self.clients.claim())
   );
 });
 
-// Fetch event - serve from cache, fallback to network
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
+// -------------------------------
+// FETCH
+// -------------------------------
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
   const url = new URL(request.url);
 
-  // CRITICAL: Skip caching for non-GET requests (POST, PUT, DELETE, etc.)
-  if (request.method !== 'GET') {
-    console.log('[HP Tracker SW] Skipping non-GET request:', request.method, url.pathname);
-    return; // Let the browser handle it normally
-  }
+  // ❌ Never cache non-GET requests
+  if (request.method !== "GET") return;
 
-  // Skip caching for Firebase APIs and external APIs
+  // ❌ Always fetch latest JS & JSON (CRITICAL FIX)
   if (
-    url.hostname.includes('firebase') ||
-    url.hostname.includes('google') ||
-    url.hostname.includes('gstatic') ||
-    url.hostname.includes('googleapis') ||
-    url.hostname.includes('firebaseio') ||
-    url.hostname.includes('onrender.com') ||
-    url.pathname.includes('/api/')
+    url.pathname.endsWith(".js") ||
+    url.pathname.endsWith(".json")
   ) {
-    console.log('[HP Tracker SW] Skipping external API:', url.hostname);
-    return; // Let the browser handle it normally
+    console.log("[HP Tracker SW] Bypass cache:", url.pathname);
+    event.respondWith(fetch(request));
+    return;
   }
 
-  // Cache strategy: Cache-first for our assets
-  event.respondWith(
-    caches.match(request)
-      .then((cachedResponse) => {
-        if (cachedResponse) {
-          console.log('[HP Tracker SW] Serving from cache:', url.pathname);
-          return cachedResponse;
-        }
+  // ❌ Skip external APIs & Firebase
+  if (
+    url.hostname.includes("firebase") ||
+    url.hostname.includes("google") ||
+    url.hostname.includes("gstatic") ||
+    url.hostname.includes("googleapis") ||
+    url.hostname.includes("firebaseio") ||
+    url.hostname.includes("onrender.com") ||
+    url.pathname.includes("/api/")
+  ) {
+    return;
+  }
 
-        console.log('[HP Tracker SW] Fetching from network:', url.pathname);
-        return fetch(request)
-          .then((networkResponse) => {
-            // Only cache successful GET responses
-            if (networkResponse && networkResponse.status === 200) {
-              const responseClone = networkResponse.clone();
-              
-              caches.open(CACHE_NAME)
-                .then((cache) => {
-                  cache.put(request, responseClone);
-                })
-                .catch((error) => {
-                  console.error('[HP Tracker SW] Cache put failed:', error);
-                });
-            }
-            
-            return networkResponse;
-          })
-          .catch((error) => {
-            console.error('[HP Tracker SW] Fetch failed:', error);
-            
-            // Return offline page if available
-            return caches.match('/index.html');
+  // ✅ Cache-first for static files
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) {
+        console.log("[HP Tracker SW] From cache:", url.pathname);
+        return cached;
+      }
+
+      return fetch(request).then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, clone);
           });
-      })
+        }
+        return response;
+      }).catch(() => caches.match("/index.html"));
+    })
   );
 });
 
-// Message handler - for version checks and cache clearing
-self.addEventListener('message', (event) => {
-  console.log('[HP Tracker SW] Message received:', event.data);
+// -------------------------------
+// MESSAGE HANDLER
+// -------------------------------
+self.addEventListener("message", (event) => {
+  if (!event.data) return;
 
-  if (event.data.type === 'SKIP_WAITING') {
-    console.log('[HP Tracker SW] Skipping waiting...');
+  if (event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 
-  if (event.data.type === 'GET_VERSION') {
-    console.log('[HP Tracker SW] Sending version:', CACHE_VERSION);
-    event.ports[0].postMessage({
-      version: CACHE_VERSION
-    });
-  }
-
-  if (event.data.type === 'CLEAR_CACHE') {
-    console.log('[HP Tracker SW] Clearing all caches...');
+  if (event.data.type === "CLEAR_CACHE") {
     event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            console.log('[HP Tracker SW] Deleting cache:', cacheName);
-            return caches.delete(cacheName);
-          })
-        );
-      })
+      caches.keys().then((cacheNames) =>
+        Promise.all(cacheNames.map((c) => caches.delete(c)))
+      )
     );
   }
 });
 
-console.log('[HP Tracker SW] Service Worker loaded, version:', CACHE_VERSION);
+console.log("[HP Tracker SW] Loaded:", CACHE_VERSION);
