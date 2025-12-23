@@ -19,6 +19,8 @@ jobs:
           python-version: "3.10"
 
       - name: Generate exams.json
+        env:
+          PYTHONPATH: .
         run: python scripts/update_exams.py
 
       - name: Commit and push changes
@@ -28,4 +30,3 @@ jobs:
           git add exam_data/exams.json
           git commit -m "Auto update exams" || echo "No changes"
           git push
-          
