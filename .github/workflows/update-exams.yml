@@ -28,3 +28,4 @@ jobs:
           git add exam_data/exams.json
           git commit -m "Auto update exams" || echo "No changes"
           git push
+          
