@@ -1,0 +1,30 @@
+name: Auto Update Exams
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Generate exams.json
+        run: python scripts/update_exams.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "exam-bot"
+          git config user.email "exam-bot@github.com"
+          git add exam_data/exams.json
+          git commit -m "Auto update exams" || echo "No changes"
+          git push
