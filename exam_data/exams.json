@@ -1,36 +1,210 @@
 [
   {
     "exam_name": "GATE",
-    "organization": "IIT",
-    "branches": [
-      "All Engineering"
+    "category": "ECE",
+    "tags": [
+      "ECE"
     ],
-    "application_date": "Dec 2025",
-    "status": "Upcoming",
-    "link": "https://gate2026.iitr.ac.in"
+    "status": "Expected",
+    "expected": {
+      "application": "Aug\u2013Sep",
+      "exam": "Feb"
+    },
+    "link": "https://gate2025.iitr.ac.in/"
+  },
+  {
+    "exam_name": "ESE (IES)",
+    "category": "ECE",
+    "tags": [
+      "ECE"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Sep\u2013Oct",
+      "exam": "Feb"
+    },
+    "link": "https://upsc.gov.in/"
+  },
+  {
+    "exam_name": "ISRO Scientist",
+    "category": "ECE",
+    "tags": [
+      "ECE"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Feb\u2013Mar",
+      "exam": "May"
+    },
+    "link": "https://www.isro.gov.in/Careers.html"
+  },
+  {
+    "exam_name": "BARC Scientific Officer",
+    "category": "ECE",
+    "tags": [
+      "ECE"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Jan",
+      "exam": "Apr"
+    },
+    "link": "https://recruit.barc.gov.in/"
+  },
+  {
+    "exam_name": "DRDO Scientist",
+    "category": "ECE",
+    "tags": [
+      "ECE"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Variable",
+      "exam": "Variable"
+    },
+    "link": "https://www.drdo.gov.in/careers"
+  },
+  {
+    "exam_name": "AAI JE",
+    "category": "ECE",
+    "tags": [
+      "ECE"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Aug",
+      "exam": "Nov"
+    },
+    "link": "https://www.aai.aero/en/careers/recruitment"
+  },
+  {
+    "exam_name": "SSC CGL",
+    "category": "General",
+    "tags": [
+      "General"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Sep\u2013Oct",
+      "exam": "Dec"
+    },
+    "link": "https://ssc.nic.in/"
+  },
+  {
+    "exam_name": "SSC CHSL",
+    "category": "General",
+    "tags": [
+      "General"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "May\u2013Jun",
+      "exam": "Jul"
+    },
+    "link": "https://ssc.nic.in/"
   },
   {
     "exam_name": "SSC JE",
-    "organization": "SSC",
-    "branches": [
-      "Mechanical",
-      "Electrical",
-      "Civil"
+    "category": "General",
+    "tags": [
+      "General"
     ],
-    "application_date": "Dec 2025",
-    "status": "Upcoming",
-    "link": "https://ssc.nic.in"
+    "status": "Expected",
+    "expected": {
+      "application": "Jul\u2013Aug",
+      "exam": "Oct"
+    },
+    "link": "https://ssc.nic.in/"
   },
   {
-    "exam_name": "ESE",
-    "organization": "UPSC",
-    "branches": [
-      "Mechanical",
-      "Electrical",
-      "Civil"
+    "exam_name": "RRB NTPC",
+    "category": "General",
+    "tags": [
+      "General"
     ],
-    "application_date": "Dec 2025",
-    "status": "Upcoming",
-    "link": "https://upsc.gov.in"
+    "status": "Expected",
+    "expected": {
+      "application": "Jan\u2013Feb",
+      "exam": "Apr"
+    },
+    "link": "https://www.rrbcdg.gov.in/"
+  },
+  {
+    "exam_name": "SBI PO",
+    "category": "Bank",
+    "tags": [
+      "Bank"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Sep\u2013Oct",
+      "exam": "Dec"
+    },
+    "link": "https://sbi.co.in/web/careers"
+  },
+  {
+    "exam_name": "SBI Clerk",
+    "category": "Bank",
+    "tags": [
+      "Bank"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Nov\u2013Dec",
+      "exam": "Jan"
+    },
+    "link": "https://sbi.co.in/web/careers"
+  },
+  {
+    "exam_name": "IBPS PO",
+    "category": "Bank",
+    "tags": [
+      "Bank"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Aug",
+      "exam": "Oct"
+    },
+    "link": "https://www.ibps.in/"
+  },
+  {
+    "exam_name": "IBPS Clerk",
+    "category": "Bank",
+    "tags": [
+      "Bank"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Jul",
+      "exam": "Sep"
+    },
+    "link": "https://www.ibps.in/"
+  },
+  {
+    "exam_name": "IBPS SO",
+    "category": "Bank",
+    "tags": [
+      "Bank"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "Aug",
+      "exam": "Nov"
+    },
+    "link": "https://www.ibps.in/"
+  },
+  {
+    "exam_name": "RBI Grade B",
+    "category": "Bank",
+    "tags": [
+      "Bank"
+    ],
+    "status": "Expected",
+    "expected": {
+      "application": "May",
+      "exam": "Jul"
+    },
+    "link": "https://www.rbi.org.in/Scripts/BS_ViewBulletin.aspx?Id=18714"
   }
 ]

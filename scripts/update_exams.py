@@ -1,32 +1,28 @@
 import json
 import sys
 from pathlib import Path
-from datetime import datetime
 
-# Ensure project root is in Python path
+# Fix Python path so exam_data is found
 ROOT_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT_DIR))
+sys.path.insert(0, str(ROOT_DIR))
 
-from exam_data.sources import SOURCES
+from exam_data.sources import EXAMS, EXPECTED_MONTHS
 
+OUTPUT = ROOT_DIR / "exam_data" / "exams.json"
 
-def generate_exams():
-    exams = []
+final_exams = []
 
-    for src in SOURCES:
-        exams.append({
-            "exam_name": src["exam_name"],
-            "organization": src["organization"],
-            "branches": src["branches"],
-            "application_date": datetime.now().strftime("%b %Y"),
-            "status": src["status"],
-            "link": src["link"]
-        })
+for exam in EXAMS:
+    expected = EXPECTED_MONTHS.get(exam["exam_name"])
 
-    output_path = ROOT_DIR / "exam_data" / "exams.json"
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(exams, f, indent=2)
+    final_exams.append({
+        "exam_name": exam["exam_name"],
+        "category": exam["category"],
+        "tags": exam["tags"],
+        "status": "Expected",
+        "expected": expected,
+        "link": exam["link"]
+    })
 
-
-if __name__ == "__main__":
-    generate_exams()
+with open(OUTPUT, "w", encoding="utf-8") as f:
+    json.dump(final_exams, f, indent=2)
